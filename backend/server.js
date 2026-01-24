@@ -1,0 +1,67 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+require('dotenv').config();
+
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Security Middleware
+app.use(helmet());
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use(limiter);
+
+// Middleware
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Restrict to frontend URL
+  credentials: true
+};
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  next();
+});
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Routes
+// Routes
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const productRoutes = require('./routes/productRoutes');
+const templateRoutes = require('./routes/templateRoutes');
+const rentalRoutes = require('./routes/rentalRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/rentals', rentalRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+
+app.get('/', (req, res) => {
+  res.send('Rental Management System API is running');
+});
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
