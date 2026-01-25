@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { AlertCircle, CheckCircle, Clock, Download, ChevronDown } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import StatusFilter from '../components/UI/StatusFilter';
 
 const AgreementManager = () => {
     const navigate = useNavigate();
@@ -18,7 +19,6 @@ const AgreementManager = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [daysLeftFilter, setDaysLeftFilter] = useState('');
-    const [showStatusFilter, setShowStatusFilter] = useState(false);
     const [showDaysLeftFilter, setShowDaysLeftFilter] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -186,57 +186,10 @@ const AgreementManager = () => {
                                 <th style={{ padding: '0.75rem 1rem' }}>Phone</th>
                                 <th style={{ padding: '0.75rem 1rem' }}>Product</th>
                                 <th style={{ position: 'relative', padding: '0.75rem 1rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setShowStatusFilter(!showStatusFilter)}>
-                                        Status
-                                        <ChevronDown size={14} />
-                                    </div>
-                                    {showStatusFilter && (
-                                        <div style={{
-                                            position: 'absolute', top: '100%', left: 0, zIndex: 10, background: 'white',
-                                            padding: '0.5rem', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                                            border: '1px solid #e2e8f0', minWidth: '150px'
-                                        }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: statusFilter ? '0.5rem' : 0 }}>
-                                                {['Active', 'Overdue', 'Due Today'].map((status) => (
-                                                    <div
-                                                        key={status}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setStatusFilter(status);
-                                                            setShowStatusFilter(false);
-                                                        }}
-                                                        style={{
-                                                            padding: '0.5rem',
-                                                            borderRadius: '4px',
-                                                            cursor: 'pointer',
-                                                            background: statusFilter === status ? '#e0f2fe' : 'transparent',
-                                                            color: statusFilter === status ? '#0284c7' : 'inherit',
-                                                            fontSize: '0.9rem',
-                                                            fontWeight: statusFilter === status ? '500' : 'normal'
-                                                        }}
-                                                        onMouseEnter={(e) => { if (statusFilter !== status) e.target.style.background = '#f8fafc'; }}
-                                                        onMouseLeave={(e) => { if (statusFilter !== status) e.target.style.background = 'transparent'; }}
-                                                    >
-                                                        {status}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {statusFilter && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setStatusFilter('');
-                                                    }}
-                                                    style={{
-                                                        width: '100%', padding: '0.25rem', background: '#f1f5f9', border: 'none',
-                                                        borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: '#64748b'
-                                                    }}
-                                                >
-                                                    Clear Filter
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
+                                    <StatusFilter
+                                        value={statusFilter}
+                                        onChange={setStatusFilter}
+                                    />
                                 </th>
                             </tr>
                         </thead>

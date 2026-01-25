@@ -24,7 +24,7 @@ app.use(limiter);
 
 // Middleware
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Restrict to frontend URL
+  origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, /\.vercel\.app$/] : 'http://localhost:5173',
   credentials: true
 };
 app.use(cors(corsOptions));
