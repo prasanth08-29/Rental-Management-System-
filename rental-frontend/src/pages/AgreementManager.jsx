@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Eye, FileText, AlertCircle, CheckCircle, Clock, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Download, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AgreementManager = () => {
+    const navigate = useNavigate();
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showExtendModal, setShowExtendModal] = useState(false);
-    const [selectedRental, setSelectedRental] = useState(null);
     const [newEndDate, setNewEndDate] = useState('');
 
+    // Filter states
     // Filter states
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [daysLeftFilter, setDaysLeftFilter] = useState('');
+    const [showStatusFilter, setShowStatusFilter] = useState(false);
+    const [showDaysLeftFilter, setShowDaysLeftFilter] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -24,7 +28,7 @@ const AgreementManager = () => {
             fetchRentals(page);
         }, 500); // Debounce search
         return () => clearTimeout(timeoutId);
-    }, [startDate, endDate, search, page]);
+    }, [startDate, endDate, search, statusFilter, daysLeftFilter, page]);
 
     const fetchRentals = async (pageNumber = 1) => {
         try {
@@ -35,6 +39,8 @@ const AgreementManager = () => {
             if (startDate) params.push(`startDate=${startDate}`);
             if (endDate) params.push(`endDate=${endDate}`);
             if (search) params.push(`search=${search}`);
+            if (statusFilter) params.push(`status=${statusFilter}`);
+            if (daysLeftFilter) params.push(`daysLeft=${daysLeftFilter}`);
             params.push(`page=${pageNumber}`);
             params.push(`limit=10`);
 
@@ -121,30 +127,6 @@ const AgreementManager = () => {
     // if (loading) return <div className="loading">Loading agreements...</div>;
     if (error) return <div className="error">{error}</div>;
 
-    const openExtendModal = (rental) => {
-        setSelectedRental(rental);
-        // Set default new date to 1 day after current end date
-        const currentEnd = new Date(rental.endDate);
-        currentEnd.setDate(currentEnd.getDate() + 1);
-        setNewEndDate(currentEnd.toISOString().split('T')[0]);
-        setShowExtendModal(true);
-    };
-
-    const handleExtend = async () => {
-        if (!newEndDate) return;
-
-        try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/rentals/${selectedRental._id}/extend`, {
-                newEndDate
-            });
-            setShowExtendModal(false);
-            toast.success('Agreement extended successfully');
-            fetchRentals(); // Refresh list
-        } catch (err) {
-            toast.error('Failed to extend agreement');
-        }
-    };
-
     return (
         <div className="page-container">
             <div className="page-header" style={{ marginBottom: '2rem' }}>
@@ -200,12 +182,62 @@ const AgreementManager = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Client</th>
-                                <th>Product</th>
-                                <th>Rental Period</th>
-                                <th>Status</th>
-                                <th>Days Left</th>
-                                <th>Actions</th>
+                                <th style={{ padding: '0.75rem 1rem' }}>Client</th>
+                                <th style={{ padding: '0.75rem 1rem' }}>Phone</th>
+                                <th style={{ padding: '0.75rem 1rem' }}>Product</th>
+                                <th style={{ position: 'relative', padding: '0.75rem 1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setShowStatusFilter(!showStatusFilter)}>
+                                        Status
+                                        <ChevronDown size={14} />
+                                    </div>
+                                    {showStatusFilter && (
+                                        <div style={{
+                                            position: 'absolute', top: '100%', left: 0, zIndex: 10, background: 'white',
+                                            padding: '0.5rem', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                                            border: '1px solid #e2e8f0', minWidth: '150px'
+                                        }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: statusFilter ? '0.5rem' : 0 }}>
+                                                {['Active', 'Overdue', 'Due Today'].map((status) => (
+                                                    <div
+                                                        key={status}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setStatusFilter(status);
+                                                            setShowStatusFilter(false);
+                                                        }}
+                                                        style={{
+                                                            padding: '0.5rem',
+                                                            borderRadius: '4px',
+                                                            cursor: 'pointer',
+                                                            background: statusFilter === status ? '#e0f2fe' : 'transparent',
+                                                            color: statusFilter === status ? '#0284c7' : 'inherit',
+                                                            fontSize: '0.9rem',
+                                                            fontWeight: statusFilter === status ? '500' : 'normal'
+                                                        }}
+                                                        onMouseEnter={(e) => { if (statusFilter !== status) e.target.style.background = '#f8fafc'; }}
+                                                        onMouseLeave={(e) => { if (statusFilter !== status) e.target.style.background = 'transparent'; }}
+                                                    >
+                                                        {status}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {statusFilter && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setStatusFilter('');
+                                                    }}
+                                                    style={{
+                                                        width: '100%', padding: '0.25rem', background: '#f1f5f9', border: 'none',
+                                                        borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: '#64748b'
+                                                    }}
+                                                >
+                                                    Clear Filter
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -217,48 +249,22 @@ const AgreementManager = () => {
                                 rentals.map((rental) => {
                                     const status = getStatus(rental);
                                     return (
-                                        <tr key={rental._id}>
-                                            <td>
-                                                <div className="client-info">
-                                                    <div className="client-name">{rental.clientName}</div>
-                                                    <div className="client-phone">{rental.clientPhone}</div>
-                                                </div>
+                                        <tr
+                                            key={rental._id}
+                                            onClick={() => navigate(`/agreement/${rental._id}`)}
+                                            style={{ cursor: 'pointer' }}
+                                            className="hover:bg-slate-50"
+                                        >
+                                            <td style={{ padding: '0.75rem 1rem' }}>
+                                                <div className="client-name">{rental.clientName}</div>
                                             </td>
-                                            <td>{rental.product?.name || 'Unknown Product'}</td>
-                                            <td>
-                                                <div className="date-range">
-                                                    <span>{new Date(rental.startDate).toLocaleDateString()}</span>
-                                                    <span className="arrow">→</span>
-                                                    <span>{new Date(rental.endDate).toLocaleDateString()}</span>
-                                                </div>
-                                            </td>
-                                            <td>
+                                            <td style={{ padding: '0.75rem 1rem' }}>{rental.clientPhone}</td>
+                                            <td style={{ padding: '0.75rem 1rem' }}>{rental.product?.name || 'Unknown Product'}</td>
+                                            <td style={{ padding: '0.75rem 1rem' }}>
                                                 <span className={`status-badge ${status.color}`}>
                                                     {status.icon}
                                                     {status.label}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <span className={status.color === 'red' ? 'text-danger' : ''}>
-                                                    {calculateDaysRemaining(rental.endDate) < 0
-                                                        ? `${Math.abs(calculateDaysRemaining(rental.endDate))} days ago`
-                                                        : `${calculateDaysRemaining(rental.endDate)} days`
-                                                    }
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                    <Link to={`/agreement/${rental._id}`} className="action-btn view" title="View Agreement">
-                                                        <Eye size={18} />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => openExtendModal(rental)}
-                                                        className="action-btn extend"
-                                                        title="Extend Agreement"
-                                                    >
-                                                        <Clock size={18} />
-                                                    </button>
-                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -290,29 +296,6 @@ const AgreementManager = () => {
                 </button>
             </div>
 
-            {showExtendModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                    <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', width: '400px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ marginBottom: '1.5rem' }}>Extend Agreement</h3>
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>New End Date</label>
-                            <input
-                                type="date"
-                                value={newEndDate}
-                                onChange={(e) => setNewEndDate(e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                            <button className="btn" onClick={() => setShowExtendModal(false)} style={{ background: '#f1f5f9' }}>Cancel</button>
-                            <button className="btn btn-primary" onClick={handleExtend}>Confirm Extension</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

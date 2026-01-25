@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
-import { Printer, ArrowLeft, Download } from 'lucide-react';
+import { Printer, ArrowLeft, Download, Clock } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import toast from 'react-hot-toast';
 
 const RENTALS_API = `${import.meta.env.VITE_API_URL}/rentals`;
 
@@ -10,6 +11,8 @@ const AgreementView = () => {
     const { id } = useParams();
     const [rental, setRental] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showExtendModal, setShowExtendModal] = useState(false);
+    const [newEndDate, setNewEndDate] = useState('');
 
     useEffect(() => {
         const fetchRental = async () => {
@@ -42,6 +45,31 @@ const AgreementView = () => {
         html2pdf().set(opt).from(element).save();
     };
 
+    const openExtendModal = () => {
+        // Set default new date to 1 day after current end date
+        const currentEnd = new Date(rental.endDate);
+        currentEnd.setDate(currentEnd.getDate() + 1);
+        setNewEndDate(currentEnd.toISOString().split('T')[0]);
+        setShowExtendModal(true);
+    };
+
+    const handleExtend = async () => {
+        if (!newEndDate) return;
+
+        try {
+            await axios.put(`${RENTALS_API}/${id}/extend`, {
+                newEndDate
+            });
+            setShowExtendModal(false);
+            toast.success('Agreement extended successfully');
+            // Refresh rental data
+            const res = await axios.get(`${RENTALS_API}/${id}`);
+            setRental(res.data);
+        } catch (err) {
+            toast.error('Failed to extend agreement');
+        }
+    };
+
     if (loading) return <p>Loading agreement...</p>;
     if (!rental) return <p>Agreement not found.</p>;
 
@@ -58,6 +86,9 @@ const AgreementView = () => {
                     <button className="btn btn-primary" onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Printer size={18} /> Print Agreement
                     </button>
+                    <button className="btn btn-secondary" onClick={openExtendModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#d97706', border: 'none' }}>
+                        <Clock size={18} /> Extend
+                    </button>
                 </div>
             </div>
 
@@ -67,6 +98,36 @@ const AgreementView = () => {
                     dangerouslySetInnerHTML={{ __html: sanitizeAgreementHtml(rental.agreementHtml) }}
                 />
             </div>
+
+            {showExtendModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', width: '400px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                        <h3 style={{ marginBottom: '1.5rem' }}>Extend Agreement</h3>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>New End Date</label>
+                            <input
+                                type="date"
+                                value={newEndDate}
+                                onChange={(e) => setNewEndDate(e.target.value)}
+                                min={new Date().toISOString().split('T')[0]}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                            <button className="btn" onClick={() => setShowExtendModal(false)} style={{ background: '#f1f5f9' }}>Cancel</button>
+                            <button className="btn btn-primary" onClick={handleExtend}>Confirm Extension</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style>
                 {`
