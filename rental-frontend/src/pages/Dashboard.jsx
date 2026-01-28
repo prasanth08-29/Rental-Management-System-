@@ -8,6 +8,7 @@ const DASHBOARD_API = `${import.meta.env.VITE_API_URL}/dashboard/stats`;
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchStats();
@@ -20,11 +21,15 @@ const Dashboard = () => {
             setLoading(false);
         } catch (err) {
             console.error(err);
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to load dashboard data.';
+            setError(errorMessage);
             setLoading(false);
         }
     };
 
     if (loading) return <div className="animate-fade"><p>Loading dashboard...</p></div>;
+    if (error) return <div className="animate-fade"><p style={{ color: 'red' }}>{error}</p></div>;
+    if (!stats) return null;
 
     return (
         <div className="animate-fade">
@@ -33,25 +38,25 @@ const Dashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                 <StatCard
                     title="Total Products"
-                    value={stats.totalProducts}
+                    value={stats.totalProducts || 0}
                     icon={<ShoppingBag size={24} color="#6366f1" />}
                     color="rgba(99, 102, 241, 0.1)"
                 />
                 <StatCard
                     title="Active Rentals"
-                    value={stats.activeRentals}
+                    value={stats.activeRentals || 0}
                     icon={<Users size={24} color="#10b981" />}
                     color="rgba(16, 185, 129, 0.1)"
                 />
                 <StatCard
                     title="Returns Due Today"
-                    value={stats.dueToday.length}
+                    value={stats.dueToday?.length || 0}
                     icon={<Clock size={24} color="#f59e0b" />}
                     color="rgba(245, 158, 11, 0.1)"
                 />
                 <StatCard
                     title="Returns Tomorrow"
-                    value={stats.dueTomorrow.length}
+                    value={stats.dueTomorrow?.length || 0}
                     icon={<AlertCircle size={24} color="#ec4899" />}
                     color="rgba(236, 72, 153, 0.1)"
                 />
@@ -62,7 +67,7 @@ const Dashboard = () => {
                     <AlertCircle size={20} color="#f59e0b" /> Urgent Returns (Due Today)
                 </h3>
 
-                {stats.dueToday.length === 0 ? (
+                {(!stats.dueToday || stats.dueToday.length === 0) ? (
                     <p style={{ color: 'var(--text-muted)' }}>No returns scheduled for today.</p>
                 ) : (
                     <div className="table-container">

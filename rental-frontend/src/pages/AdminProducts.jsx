@@ -7,6 +7,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/products`;
 const AdminProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [search, setSearch] = useState('');
@@ -45,6 +46,7 @@ const AdminProducts = () => {
             setLoading(false);
         } catch (err) {
             console.error(err);
+            setError('Failed to fetch products');
             setLoading(false);
         }
     };
@@ -109,6 +111,7 @@ const AdminProducts = () => {
                     </button>
                 </div>
 
+                {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
                 {loading ? <p>Loading...</p> : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                         {products.map(product => (
