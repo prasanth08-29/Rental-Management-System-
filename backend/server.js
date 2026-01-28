@@ -35,28 +35,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB Connection
-// MongoDB Connection
-const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
-
-console.log('Attempting to connect to MongoDB...');
-// Debug: Log the URI (masked)
-if (process.env.MONGODB_URI) {
-  const maskedURI = process.env.MONGODB_URI.replace(/:([^:@]{1,})@/, ':****@');
-  console.log(`Connection parameter: ${maskedURI}`);
-} else {
-  console.error('FATAL: MONGODB_URI is not defined');
-}
-
-mongoose.connect(process.env.MONGODB_URI, clientOptions)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => {
-    console.error('MongoDB connection error details:', err);
-    // Print verify hint
-    console.error('HINT: Check if your IP is whitelisted in Atlas (0.0.0.0/0) and if the user/password in Render Environment Variables are correct.');
-  });
-
-// Routes
 // Routes
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -78,6 +56,32 @@ app.get('/', (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// MongoDB Connection and Server Start
+const startServer = async () => {
+  try {
+    console.log('Attempting to connect to MongoDB...');
+    const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+
+    // Debug: Log the URI (masked)
+    if (process.env.MONGODB_URI) {
+      const maskedURI = process.env.MONGODB_URI.replace(/:([^:@]{1,})@/, ':****@');
+      console.log(`Connection parameter: ${maskedURI}`);
+    } else {
+      throw new Error('FATAL: MONGODB_URI is not defined');
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI, clientOptions);
+    console.log('MongoDB connected successfully');
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    console.error('HINT: Check if your IP is whitelisted in Atlas (0.0.0.0/0) and if the user/password in Environment Variables are correct.');
+    process.exit(1);
+  }
+};
+
+startServer();
