@@ -61,7 +61,7 @@ const ClientBooking = () => {
 
             <div className="glass-card" style={{ padding: '3rem', background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(255,255,255,0.8)' }}>
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div className="grid-responsive">
                         <div>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
                                 <User size={18} /> Full Name
@@ -95,7 +95,7 @@ const ClientBooking = () => {
 
 
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div className="grid-responsive">
                         <div>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
                                 <ShoppingBag size={18} /> Select Product
@@ -114,7 +114,7 @@ const ClientBooking = () => {
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
+                    <div className="flex-responsive">
                         <div style={{ flex: 1 }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
                                 <Calendar size={18} /> Pickup Date

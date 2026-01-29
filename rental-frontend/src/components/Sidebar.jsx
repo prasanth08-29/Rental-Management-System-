@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, FileText, Settings, LogOut, ChevronRight, User } from 'lucide-react';
+import { LayoutDashboard, Package, FileText, Settings, LogOut, ChevronRight, User, X } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const isAdminPath = location.pathname.startsWith('/admin');
@@ -23,12 +23,20 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="app-sidebar" style={{ width: '280px', minWidth: '280px', background: 'var(--bg-sidebar)', color: 'var(--text-light)', borderRight: 'none', position: 'fixed', left: 0, top: 0, bottom: 0, overflowY: 'auto', zIndex: 1000, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
-            <div className="sidebar-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <aside className={`app-sidebar ${isOpen ? 'open' : ''}`} style={{ width: '280px', minWidth: '280px', background: 'var(--bg-sidebar)', color: 'var(--text-light)', borderRight: 'none', position: 'fixed', left: 0, top: 0, bottom: 0, overflowY: 'auto', zIndex: 1000, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
+            <div className="sidebar-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <NavLink to="/" className="sidebar-logo" style={{ color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <img src="/favicon.jpg" alt="AeonCare Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
                     <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>AeonCare Rental</span>
                 </NavLink>
+                {/* Mobile Close Button */}
+                <button
+                    onClick={onClose}
+                    className="mobile-only"
+                    style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}
+                >
+                    <X size={24} />
+                </button>
             </div>
 
             <nav className="sidebar-nav" style={{ paddingTop: '2rem' }}>
@@ -43,6 +51,7 @@ const Sidebar = () => {
                                 color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
                                 background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
                             })}
+                            onClick={() => onClose && window.innerWidth <= 768 && onClose()}
                         >
                             <span className="link-icon">{link.icon}</span>
                             <span className="link-text">{link.name}</span>

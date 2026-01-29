@@ -166,7 +166,7 @@ const AdminProducts = () => {
                             <label>Product Name</label>
                             <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div className="flex-responsive" style={{ marginBottom: '1rem' }}>
                                 <div style={{ flex: 1 }}>
                                     <label>Price/Day</label>
                                     <input type="number" value={formData.pricePerDay} onChange={e => setFormData({ ...formData, pricePerDay: e.target.value })} required />

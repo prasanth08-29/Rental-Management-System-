@@ -46,7 +46,7 @@ const AdminTemplate = () => {
 
     return (
         <div className="animate-fade">
-            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2>Agreement Template Editor</h2>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
 
