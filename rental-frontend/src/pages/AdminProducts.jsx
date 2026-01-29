@@ -3,8 +3,6 @@ import axios from 'axios';
 import { Plus, Edit2, Trash2, Package } from 'lucide-react';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/products`;
-// Force refresh: Removing Stock, Description, Delivery Charges fields
-
 
 const AdminProducts = () => {
     const [products, setProducts] = useState([]);
@@ -60,7 +58,6 @@ const AdminProducts = () => {
             }
             setShowModal(false);
             setEditingProduct(null);
-            setEditingProduct(null);
             setFormData({ name: '', pricePerDay: '', securityDeposit: '' });
             fetchProducts();
         } catch (err) {
@@ -110,8 +107,8 @@ const AdminProducts = () => {
 
                 {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
                 {loading ? <p>Loading...</p> : (
-                    {
-                        products.map(product => (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                        {products.map(product => (
                             <div key={product._id} className="glass-card" style={{ padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '1rem' }}>
                                     <div>
@@ -133,36 +130,35 @@ const AdminProducts = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))
-                    }
+                        ))}
                     </div>
                 )}
 
-            {/* Pagination Controls */}
-            {!loading && products.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
-                    <button
-                        className="btn btn-secondary"
-                        disabled={page === 1}
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                    >
-                        Previous
-                    </button>
-                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>
-                        Page {page} of {totalPages}
-                    </span>
-                    <button
-                        className="btn btn-secondary"
-                        disabled={page === totalPages}
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
-        </div >
+                {/* Pagination Controls */}
+                {!loading && products.length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+                        <button
+                            className="btn btn-secondary"
+                            disabled={page === 1}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </button>
+                        <span style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            className="btn btn-secondary"
+                            disabled={page === totalPages}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+            </div>
 
-            { showModal && (
+            {showModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '500px', padding: '2rem', background: 'white', maxHeight: '90vh', overflowY: 'auto' }}>
                         <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
@@ -188,10 +184,9 @@ const AdminProducts = () => {
                         </form>
                     </div>
                 </div>
-            )
-}
-            </>
-            );
+            )}
+        </>
+    );
 };
 
 export default AdminProducts;
