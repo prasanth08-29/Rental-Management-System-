@@ -75,11 +75,11 @@ const AgreementView = () => {
 
     return (
         <div className="animate-fade">
-            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <Link to="/agreements" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-muted)' }}>
                     <ArrowLeft size={18} /> Back to Agreements
                 </Link>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <button className="btn btn-secondary" onClick={handleDownloadPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Download size={18} /> Download PDF
                     </button>
@@ -102,9 +102,9 @@ const AgreementView = () => {
             {showExtendModal && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem'
                 }}>
-                    <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', width: '400px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                    <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '400px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                         <h3 style={{ marginBottom: '1.5rem' }}>Extend Agreement</h3>
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>New End Date</label>
@@ -137,9 +137,20 @@ const AgreementView = () => {
             .container { max-width: 100% !important; padding: 0 !important; }
             .glass-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
           }
-          .agreement-content h1 { text-align: center; margin-bottom: 2rem; color: black; }
+          
+          .agreement-content h1 { text-align: center; margin-bottom: 2rem; color: black; font-size: 24px; }
           .agreement-content p { line-height: 1.6; margin-bottom: 1rem; color: #333; }
           .agreement-content strong { color: black; }
+          .agreement-content img { max-width: 100%; height: auto; }
+          .agreement-content table { width: 100%; border-collapse: collapse; }
+          
+          @media (max-width: 768px) {
+            .agreement-content h1 { font-size: 20px; }
+            .agreement-content { font-size: 14px; }
+            .glass-card {
+                padding: 1.5rem !important; /* Force overrides inline style */
+            }
+          }
         `}
             </style>
         </div>
