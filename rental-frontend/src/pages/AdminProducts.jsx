@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Plus, Edit2, Trash2, Package } from 'lucide-react';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/products`;
+// Force refresh: Removing Stock, Description, Delivery Charges fields
+
 
 const AdminProducts = () => {
     const [products, setProducts] = useState([]);
