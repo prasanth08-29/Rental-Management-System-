@@ -16,11 +16,8 @@ const AdminProducts = () => {
 
     const [formData, setFormData] = useState({
         name: '',
-        description: '',
         pricePerDay: '',
-        stock: '',
         securityDeposit: '',
-        deliveryCharges: '',
     });
 
     useEffect(() => {
@@ -61,7 +58,8 @@ const AdminProducts = () => {
             }
             setShowModal(false);
             setEditingProduct(null);
-            setFormData({ name: '', description: '', pricePerDay: '', stock: '', securityDeposit: '', deliveryCharges: '' });
+            setEditingProduct(null);
+            setFormData({ name: '', pricePerDay: '', securityDeposit: '' });
             fetchProducts();
         } catch (err) {
             console.error(err);
@@ -72,11 +70,8 @@ const AdminProducts = () => {
         setEditingProduct(product);
         setFormData({
             name: product.name,
-            description: product.description,
             pricePerDay: product.pricePerDay,
-            stock: product.stock,
             securityDeposit: product.securityDeposit || '',
-            deliveryCharges: product.deliveryCharges || '',
         });
         setShowModal(true);
     };
@@ -106,38 +101,28 @@ const AdminProducts = () => {
                             style={{ width: '250px', marginBottom: 0 }}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={() => { setEditingProduct(null); setFormData({ name: '', description: '', pricePerDay: '', stock: '', securityDeposit: '', deliveryCharges: '' }); setShowModal(true); }}>
+                    <button className="btn btn-primary" onClick={() => { setEditingProduct(null); setFormData({ name: '', pricePerDay: '', securityDeposit: '' }); setShowModal(true); }}>
                         <Plus size={18} style={{ marginRight: '0.5rem' }} /> Add Product
                     </button>
                 </div>
 
                 {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
                 {loading ? <p>Loading...</p> : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                        {products.map(product => (
+                    {
+                        products.map(product => (
                             <div key={product._id} className="glass-card" style={{ padding: '1.5rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '1rem' }}>
                                     <div>
                                         <h3 style={{ margin: '0 0 0.5rem 0' }}>{product.name}</h3>
-                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>{product.description}</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem' }}>
+                                            <span style={{ fontWeight: 'bold' }}>₹{product.pricePerDay}/day</span>
+                                            <span style={{ color: 'var(--text-muted)' }}>Security Deposit: ₹{product.securityDeposit || 0}</span>
+                                        </div>
                                     </div>
                                     <Package size={24} color="var(--primary)" />
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ fontWeight: 'bold' }}>₹{product.pricePerDay}/day</span>
-                                        <span style={{ color: 'var(--text-muted)' }}>Stock: {product.stock}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span>Security Deposit:</span>
-                                        <span>₹{product.securityDeposit || 0}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span>Delivery Charges:</span>
-                                        <span>₹{product.deliveryCharges || 0}</span>
-                                    </div>
-                                </div>
-                                <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+
+                                <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
                                     <button className="btn" onClick={() => handleEdit(product)} style={{ background: '#f1f5f9', flex: 1 }}>
                                         <Edit2 size={16} />
                                     </button>
@@ -146,35 +131,36 @@ const AdminProducts = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    }
                     </div>
                 )}
 
-                {/* Pagination Controls */}
-                {!loading && products.length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
-                        <button
-                            className="btn btn-secondary"
-                            disabled={page === 1}
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                        >
-                            Previous
-                        </button>
-                        <span style={{ fontSize: '0.9rem', color: '#64748b' }}>
-                            Page {page} of {totalPages}
-                        </span>
-                        <button
-                            className="btn btn-secondary"
-                            disabled={page === totalPages}
-                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        >
-                            Next
-                        </button>
-                    </div>
-                )}
-            </div>
+            {/* Pagination Controls */}
+            {!loading && products.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+                    <button
+                        className="btn btn-secondary"
+                        disabled={page === 1}
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                    >
+                        Previous
+                    </button>
+                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        className="btn btn-secondary"
+                        disabled={page === totalPages}
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
+        </div >
 
-            {showModal && (
+            { showModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '500px', padding: '2rem', background: 'white', maxHeight: '90vh', overflowY: 'auto' }}>
                         <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
@@ -182,28 +168,14 @@ const AdminProducts = () => {
                             <label>Product Name</label>
                             <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
 
-                            <label>Description (Features / Bed Type)</label>
-                            <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <div style={{ flex: 1 }}>
                                     <label>Price/Day</label>
                                     <input type="number" value={formData.pricePerDay} onChange={e => setFormData({ ...formData, pricePerDay: e.target.value })} required />
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <label>Stock</label>
-                                    <input type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} required />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <div style={{ flex: 1 }}>
                                     <label>Security Deposit</label>
                                     <input type="number" value={formData.securityDeposit} onChange={e => setFormData({ ...formData, securityDeposit: e.target.value })} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <label>Delivery Charges</label>
-                                    <input type="number" value={formData.deliveryCharges} onChange={e => setFormData({ ...formData, deliveryCharges: e.target.value })} />
                                 </div>
                             </div>
 
@@ -214,9 +186,10 @@ const AdminProducts = () => {
                         </form>
                     </div>
                 </div>
-            )}
-        </>
-    );
+            )
+}
+            </>
+            );
 };
 
 export default AdminProducts;
