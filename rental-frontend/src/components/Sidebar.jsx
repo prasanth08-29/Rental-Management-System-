@@ -25,10 +25,10 @@ const Sidebar = () => {
     return (
         <aside className="app-sidebar" style={{ width: '280px', minWidth: '280px', background: 'var(--bg-sidebar)', color: 'var(--text-light)', borderRight: 'none', position: 'fixed', left: 0, top: 0, bottom: 0, overflowY: 'auto', zIndex: 1000, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
             <div className="sidebar-header" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="sidebar-logo" style={{ color: 'white' }}>
-                    <div className="logo-icon" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', border: 'none' }}>AC</div>
-                    <span>Aeon Care</span>
-                </div>
+                <NavLink to="/" className="sidebar-logo" style={{ color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <img src="/favicon.jpg" alt="AeonCare Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>AeonCare Rental</span>
+                </NavLink>
             </div>
 
             <nav className="sidebar-nav" style={{ paddingTop: '2rem' }}>
