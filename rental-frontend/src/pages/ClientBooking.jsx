@@ -32,7 +32,6 @@ const ClientBooking = () => {
             // Requesting a high limit to get all products for the dropdown
             const res = await axios.get(`${PRODUCTS_API}?limit=1000`);
             const productsList = res.data.products || [];
-            const productsList = res.data.products || [];
             // Simplified: showing all products regardless of stock field
             setProducts(productsList);
             setLoading(false);
