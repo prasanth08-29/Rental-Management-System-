@@ -4,6 +4,7 @@ import axios from 'axios';
 import { AlertCircle, CheckCircle, Clock, Download, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusFilter from '../components/UI/StatusFilter';
+import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 const AgreementManager = () => {
     const navigate = useNavigate();
@@ -22,6 +23,10 @@ const AgreementManager = () => {
     const [showDaysLeftFilter, setShowDaysLeftFilter] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Modal states
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [rentalToDelete, setRentalToDelete] = useState(null);
 
     // Check for admin role
     const isAdmin = sessionStorage.getItem('userRole') === 'admin';
@@ -112,13 +117,18 @@ const AgreementManager = () => {
         document.body.removeChild(link);
     };
 
-    const handleDelete = async (id, e) => {
-        e.stopPropagation(); // Prevent row click
-        if (!window.confirm('Are you sure you want to delete this agreement? This action cannot be undone.')) return;
+    const handleDeleteClick = (id, e) => {
+        e.stopPropagation();
+        setRentalToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!rentalToDelete) return;
 
         try {
             const token = sessionStorage.getItem('token');
-            await axios.delete(`${import.meta.env.VITE_API_URL}/rentals/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/rentals/${rentalToDelete}`, {
                 headers: { 'x-auth-token': token }
             });
             toast.success('Agreement deleted successfully');
@@ -126,6 +136,9 @@ const AgreementManager = () => {
         } catch (err) {
             console.error(err);
             toast.error('Failed to delete agreement');
+        } finally {
+            setIsDeleteModalOpen(false);
+            setRentalToDelete(null);
         }
     };
 
@@ -244,7 +257,7 @@ const AgreementManager = () => {
                                             {isAdmin && (
                                                 <td style={{ padding: '0.75rem 1rem' }}>
                                                     <button
-                                                        onClick={(e) => handleDelete(rental._id, e)}
+                                                        onClick={(e) => handleDeleteClick(rental._id, e)}
                                                         className="btn-icon danger"
                                                         title="Delete Agreement"
                                                         style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -284,7 +297,16 @@ const AgreementManager = () => {
                 </button>
             </div >
 
-        </div >
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Agreement"
+                message="Are you sure you want to delete this agreement? This action cannot be undone."
+                confirmText="Delete"
+                type="danger"
+            />
+        </div>
     );
 };
 

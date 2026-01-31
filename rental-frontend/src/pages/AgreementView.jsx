@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
-import { Printer, ArrowLeft, Download, Clock } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Printer, ArrowLeft, Download, Clock, Trash2 } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 const RENTALS_API = `${import.meta.env.VITE_API_URL}/rentals`;
 
@@ -13,6 +14,11 @@ const AgreementView = () => {
     const [loading, setLoading] = useState(true);
     const [showExtendModal, setShowExtendModal] = useState(false);
     const [newEndDate, setNewEndDate] = useState('');
+    const navigate = useNavigate();
+
+    // Delete modal state
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const isAdmin = sessionStorage.getItem('userRole') === 'admin';
 
     useEffect(() => {
         const fetchRental = async () => {
@@ -70,6 +76,26 @@ const AgreementView = () => {
         }
     };
 
+    const handleDeleteClick = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            const token = sessionStorage.getItem('token');
+            await axios.delete(`${RENTALS_API}/${id}`, {
+                headers: { 'x-auth-token': token }
+            });
+            toast.success('Agreement deleted successfully');
+            navigate('/agreements');
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to delete agreement');
+        } finally {
+            setIsDeleteModalOpen(false);
+        }
+    };
+
     if (loading) return <p>Loading agreement...</p>;
     if (!rental) return <p>Agreement not found.</p>;
 
@@ -89,6 +115,11 @@ const AgreementView = () => {
                     <button className="btn btn-secondary" onClick={openExtendModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#d97706', border: 'none' }}>
                         <Clock size={18} /> Extend
                     </button>
+                    {isAdmin && (
+                        <button className="btn btn-secondary" onClick={handleDeleteClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fee2e2', color: '#dc2626', border: 'none' }}>
+                            <Trash2 size={18} /> Delete
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -127,7 +158,19 @@ const AgreementView = () => {
                         </div>
                     </div>
                 </div>
-            )}
+                </div>
+    )
+}
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Agreement"
+                message="Are you sure you want to delete this agreement? This action cannot be undone."
+                confirmText="Delete"
+                type="danger"
+            />
 
             <style>
                 {`
@@ -153,7 +196,7 @@ const AgreementView = () => {
           }
         `}
             </style>
-        </div>
+        </div >
     );
 };
 
