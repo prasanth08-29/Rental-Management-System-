@@ -4,6 +4,7 @@ const Rental = require('../models/Rental');
 const Template = require('../models/Template');
 const Product = require('../models/Product');
 const { sendAgreementEmail } = require('../utils/emailService');
+const { adminAuth } = require('../middleware/authMiddleware');
 
 // Get all rentals with pagination, search, and date filtering
 router.get('/', async (req, res) => {
@@ -130,7 +131,7 @@ router.post('/', async (req, res) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
         // Use custom rental rate if provided, otherwise default to product price
         const ratePerDay = rentalRate ? Number(rentalRate) : product.pricePerDay;
@@ -147,8 +148,8 @@ router.post('/', async (req, res) => {
             .replace(/{{CLIENT_PHONE}}/g, clientPhone)
             .replace(/{{CLIENT_ADDRESS}}/g, '') // Ensure placeholder is removed even if template has it
             .replace(/{{PRODUCT_NAME}}/g, product.name)
-            .replace(/{{PRODUCT_DESCRIPTION}}/g, product.description || '')
-            .replace(/{{SERIAL_NUMBER}}/g, serialNumber || '')
+            .replace(/{{PRODUCT_NAME}}/g, product.name)
+            .replace(/{{SKU}}/g, product.sku) // Used to be {{SERIAL_NUMBER}}
             .replace(/{{PICKUP_DATE}}/g, start.toLocaleDateString('en-IN'))
             .replace(/{{END_DATE}}/g, end.toLocaleDateString('en-IN'))
             .replace(/{{RENTAL_RATE}}/g, `Rs.${ratePerDay}/- per day`)
@@ -195,6 +196,19 @@ router.put('/:id/extend', async (req, res) => {
         res.json(updatedRental);
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+});
+
+// Delete a rental (Admin only)
+router.delete('/:id', adminAuth, async (req, res) => {
+    try {
+        const rental = await Rental.findById(req.params.id);
+        if (!rental) return res.status(404).json({ message: 'Rental not found' });
+
+        await Rental.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Rental agreement deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 

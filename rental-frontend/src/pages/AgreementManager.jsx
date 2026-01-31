@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { AlertCircle, CheckCircle, Clock, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Download, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusFilter from '../components/UI/StatusFilter';
 
@@ -22,6 +22,9 @@ const AgreementManager = () => {
     const [showDaysLeftFilter, setShowDaysLeftFilter] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Check for admin role
+    const isAdmin = sessionStorage.getItem('userRole') === 'admin';
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -109,6 +112,23 @@ const AgreementManager = () => {
         document.body.removeChild(link);
     };
 
+    const handleDelete = async (id, e) => {
+        e.stopPropagation(); // Prevent row click
+        if (!window.confirm('Are you sure you want to delete this agreement? This action cannot be undone.')) return;
+
+        try {
+            const token = sessionStorage.getItem('token');
+            await axios.delete(`${import.meta.env.VITE_API_URL}/rentals/${id}`, {
+                headers: { 'x-auth-token': token }
+            });
+            toast.success('Agreement deleted successfully');
+            fetchRentals(page); // Refresh list
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to delete agreement');
+        }
+    };
+
     const calculateDaysRemaining = (endDate) => {
         const end = new Date(endDate);
         const now = new Date();
@@ -191,6 +211,7 @@ const AgreementManager = () => {
                                         onChange={setStatusFilter}
                                     />
                                 </th>
+                                {isAdmin && <th style={{ padding: '0.75rem 1rem', width: '50px' }}>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -219,17 +240,31 @@ const AgreementManager = () => {
                                                     {status.label}
                                                 </span>
                                             </td>
+
+                                            {isAdmin && (
+                                                <td style={{ padding: '0.75rem 1rem' }}>
+                                                    <button
+                                                        onClick={(e) => handleDelete(rental._id, e)}
+                                                        className="btn-icon danger"
+                                                        title="Delete Agreement"
+                                                        style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </td>
+                                            )}
                                         </tr>
                                     );
                                 })
                             )}
                         </tbody>
                     </table>
-                )}
-            </div>
+                )
+                }
+            </div >
 
             {/* Pagination Controls */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+            < div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
                 <button
                     className="btn btn-secondary"
                     disabled={page === 1}
@@ -247,9 +282,9 @@ const AgreementManager = () => {
                 >
                     Next
                 </button>
-            </div>
+            </div >
 
-        </div>
+        </div >
     );
 };
 

@@ -32,8 +32,7 @@ router.get('/', async (req, res) => {
     <h3 style="border-bottom: 1px solid #ccc; margin-top: 10px; margin-bottom: 5px; font-size: 15px;">1. Equipment Details</h3>
     <ul style="margin-top: 5px; margin-bottom: 10px;">
         <li><strong>Item Rented:</strong> {{PRODUCT_NAME}}</li>
-        <li><strong>Bed Type & Features:</strong> {{PRODUCT_DESCRIPTION}}</li>
-        <li><strong>Serial Number:</strong> {{SERIAL_NUMBER}}</li>
+        <li><strong>SKU:</strong> {{SKU}}</li>
     </ul>
 
     <h3 style="border-bottom: 1px solid #ccc; margin-top: 10px; margin-bottom: 5px; font-size: 15px;">2. Rental Period</h3>

@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Products', path: '/admin/products', icon: <Package size={20} />, visible: isAdminPath },
         { name: 'Template', path: '/admin/template', icon: <Settings size={20} />, visible: isAdminPath },
         { name: 'Users', path: '/admin/users', icon: <User size={20} />, visible: isAdminPath },
-        { name: 'Agreements', path: '/agreements', icon: <FileText size={20} />, visible: !isAdminPath },
+        { name: 'Agreements', path: '/agreements', icon: <FileText size={20} />, visible: true },
     ];
 
     return (
