@@ -70,7 +70,7 @@ const ClientBooking = () => {
         const end = new Date(formData.endDate);
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays > 0 ? diffDays : 0; // Return 0 if same day or invalid
+        return diffDays + 1;
     };
 
     const calculateTotal = () => {
