@@ -49,11 +49,8 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const product = new Product({
         name: req.body.name,
-        description: req.body.description,
-        pricePerDay: req.body.pricePerDay,
-        stock: req.body.stock,
+        sku: req.body.sku,
         securityDeposit: req.body.securityDeposit,
-        deliveryCharges: req.body.deliveryCharges,
     });
 
     try {
@@ -71,11 +68,8 @@ router.put('/:id', async (req, res) => {
         if (!product) return res.status(404).json({ message: 'Product not found' });
 
         if (req.body.name != null) product.name = req.body.name;
-        if (req.body.description != null) product.description = req.body.description;
-        if (req.body.pricePerDay != null) product.pricePerDay = req.body.pricePerDay;
-        if (req.body.stock != null) product.stock = req.body.stock;
+        if (req.body.sku != null) product.sku = req.body.sku;
         if (req.body.securityDeposit != null) product.securityDeposit = req.body.securityDeposit;
-        if (req.body.deliveryCharges != null) product.deliveryCharges = req.body.deliveryCharges;
 
         const updatedProduct = await product.save();
         res.json(updatedProduct);

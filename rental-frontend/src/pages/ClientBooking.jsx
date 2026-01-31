@@ -30,9 +30,11 @@ const ClientBooking = () => {
     const fetchProducts = async () => {
         try {
             // Requesting a high limit to get all products for the dropdown
-            const res = await axios.get(`${PRODUCTS_API}?limit=100`);
+            const res = await axios.get(`${PRODUCTS_API}?limit=1000`);
             const productsList = res.data.products || [];
-            setProducts(productsList.filter(p => p.stock > 0));
+            const productsList = res.data.products || [];
+            // Simplified: showing all products regardless of stock field
+            setProducts(productsList);
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -45,8 +47,9 @@ const ClientBooking = () => {
         setFormData(prev => ({
             ...prev,
             productId,
-            rentalRate: selectedProduct ? selectedProduct.pricePerDay : '',
-            deliveryCharges: (prev.deliveryMode === 'delivery' && selectedProduct) ? selectedProduct.deliveryCharges : (prev.deliveryMode === 'pickup' ? 0 : '')
+            rentalRate: '', // Manual entry required
+            // Simplified: Delivery charges always start clean/0, no auto-fill from product
+            deliveryCharges: (prev.deliveryMode === 'pickup') ? 0 : ''
         }));
     };
 
@@ -55,7 +58,8 @@ const ClientBooking = () => {
         setFormData(prev => ({
             ...prev,
             deliveryMode: mode,
-            deliveryCharges: mode === 'pickup' ? 0 : (selectedProduct ? selectedProduct.deliveryCharges : '')
+            // Simplified: Pickup forces 0, Delivery keeps existing or blank
+            deliveryCharges: mode === 'pickup' ? 0 : prev.deliveryCharges
         }));
     };
 
@@ -130,7 +134,7 @@ const ClientBooking = () => {
                                 <option value="">-- Choose a product --</option>
                                 {products.map(product => (
                                     <option key={product._id} value={product._id}>
-                                        {product.name} (Deposit: ₹{product.securityDeposit || 0})
+                                        {product.name} (SKU: {product.sku}) (Deposit: ₹{product.securityDeposit || 0})
                                     </option>
                                 ))}
                             </select>

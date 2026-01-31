@@ -16,7 +16,7 @@ const AdminProducts = () => {
 
     const [formData, setFormData] = useState({
         name: '',
-        pricePerDay: '',
+        sku: '',
         securityDeposit: '',
     });
 
@@ -58,7 +58,7 @@ const AdminProducts = () => {
             }
             setShowModal(false);
             setEditingProduct(null);
-            setFormData({ name: '', pricePerDay: '', securityDeposit: '' });
+            setFormData({ name: '', sku: '', securityDeposit: '' });
             fetchProducts();
         } catch (err) {
             console.error(err);
@@ -69,7 +69,7 @@ const AdminProducts = () => {
         setEditingProduct(product);
         setFormData({
             name: product.name,
-            pricePerDay: product.pricePerDay,
+            sku: product.sku,
             securityDeposit: product.securityDeposit || '',
         });
         setShowModal(true);
@@ -100,7 +100,7 @@ const AdminProducts = () => {
                             style={{ width: '250px', marginBottom: 0 }}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={() => { setEditingProduct(null); setFormData({ name: '', pricePerDay: '', securityDeposit: '' }); setShowModal(true); }}>
+                    <button className="btn btn-primary" onClick={() => { setEditingProduct(null); setFormData({ name: '', sku: '', securityDeposit: '' }); setShowModal(true); }}>
                         <Plus size={18} style={{ marginRight: '0.5rem' }} /> Add Product
                     </button>
                 </div>
@@ -114,7 +114,7 @@ const AdminProducts = () => {
                                     <div>
                                         <h3 style={{ margin: '0 0 0.5rem 0' }}>{product.name}</h3>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.9rem' }}>
-                                            <span style={{ fontWeight: 'bold' }}>₹{product.pricePerDay}/day</span>
+                                            <span style={{ fontWeight: 'bold' }}>SKU: {product.sku}</span>
                                             <span style={{ color: 'var(--text-muted)' }}>Security Deposit: ₹{product.securityDeposit || 0}</span>
                                         </div>
                                     </div>
@@ -168,8 +168,8 @@ const AdminProducts = () => {
 
                             <div className="flex-responsive" style={{ marginBottom: '1rem' }}>
                                 <div style={{ flex: 1 }}>
-                                    <label>Price/Day</label>
-                                    <input type="number" value={formData.pricePerDay} onChange={e => setFormData({ ...formData, pricePerDay: e.target.value })} required />
+                                    <label>SKU / Model No</label>
+                                    <input type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} required />
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <label>Security Deposit</label>
