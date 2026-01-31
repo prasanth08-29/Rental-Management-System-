@@ -158,9 +158,7 @@ const AgreementView = () => {
                         </div>
                     </div>
                 </div>
-                </div>
-    )
-}
+            )}
 
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
