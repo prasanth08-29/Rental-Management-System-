@@ -118,7 +118,7 @@ router.get('/:id', async (req, res) => {
 // Create a rental and generate agreement
 router.post('/', async (req, res) => {
     try {
-        const { clientName, clientPhone, productId, startDate, endDate, serialNumber, rentalRate } = req.body;
+        const { clientName, clientPhone, productId, startDate, endDate, serialNumber, rentalRate, deliveryCharges } = req.body;
 
         const product = await Product.findById(productId);
         if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -136,6 +136,11 @@ router.post('/', async (req, res) => {
         const ratePerDay = rentalRate ? Number(rentalRate) : product.pricePerDay;
         const totalRental = diffDays * ratePerDay;
 
+        // Use custom delivery charges if provided (could be 0)
+        const deliveryDetails = (deliveryCharges !== undefined && deliveryCharges !== '')
+            ? Number(deliveryCharges)
+            : product.deliveryCharges;
+
         // Generate agreement HTML
         let agreementHtml = template.content
             .replace(/{{CLIENT_NAME}}/g, clientName)
@@ -148,7 +153,7 @@ router.post('/', async (req, res) => {
             .replace(/{{END_DATE}}/g, end.toLocaleDateString('en-IN'))
             .replace(/{{RENTAL_RATE}}/g, `Rs.${ratePerDay}/- per day`)
             .replace(/{{SECURITY_DEPOSIT}}/g, `Rs.${product.securityDeposit}/-`)
-            .replace(/{{DELIVERY_CHARGES}}/g, `Rs.${product.deliveryCharges}/-`)
+            .replace(/{{DELIVERY_CHARGES}}/g, `Rs.${deliveryDetails}/-`)
             .replace(/{{TOTAL_CHARGE}}/g, `Rs.${totalRental}/-`)
             .replace(/{{AGREEMENT_DATE}}/g, new Date().toLocaleDateString('en-IN'));
 
@@ -159,7 +164,7 @@ router.post('/', async (req, res) => {
             startDate,
             endDate,
             securityDeposit: product.securityDeposit,
-            deliveryCharges: product.deliveryCharges,
+            deliveryCharges: deliveryDetails,
             rentalRate: ratePerDay,
             serialNumber,
             agreementHtml,

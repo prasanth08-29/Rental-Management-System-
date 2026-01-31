@@ -18,6 +18,8 @@ const ClientBooking = () => {
         rentalRate: '',
         startDate: '',
         endDate: '',
+        deliveryMode: 'delivery', // 'delivery' or 'pickup'
+        deliveryCharges: '',
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -36,6 +38,25 @@ const ClientBooking = () => {
             console.error(err);
             setLoading(false);
         }
+    };
+
+    const handleProductChange = (productId) => {
+        const selectedProduct = products.find(p => p._id === productId);
+        setFormData(prev => ({
+            ...prev,
+            productId,
+            rentalRate: selectedProduct ? selectedProduct.pricePerDay : '',
+            deliveryCharges: (prev.deliveryMode === 'delivery' && selectedProduct) ? selectedProduct.deliveryCharges : (prev.deliveryMode === 'pickup' ? 0 : '')
+        }));
+    };
+
+    const handleDeliveryModeChange = (mode) => {
+        const selectedProduct = products.find(p => p._id === formData.productId);
+        setFormData(prev => ({
+            ...prev,
+            deliveryMode: mode,
+            deliveryCharges: mode === 'pickup' ? 0 : (selectedProduct ? selectedProduct.deliveryCharges : '')
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -103,14 +124,7 @@ const ClientBooking = () => {
                             </label>
                             <select
                                 value={formData.productId}
-                                onChange={e => {
-                                    const selectedProduct = products.find(p => p._id === e.target.value);
-                                    setFormData({
-                                        ...formData,
-                                        productId: e.target.value,
-                                        rentalRate: selectedProduct ? selectedProduct.pricePerDay : ''
-                                    });
-                                }}
+                                onChange={e => handleProductChange(e.target.value)}
                                 required
                             >
                                 <option value="">-- Choose a product --</option>
@@ -160,6 +174,48 @@ const ClientBooking = () => {
                             onChange={e => setFormData({ ...formData, rentalRate: e.target.value })}
                             required
                         />
+                    </div>
+
+
+                    <div className="grid-responsive" style={{ marginTop: '1rem' }}>
+                        <div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                <MapPin size={18} /> Delivery Mode
+                            </label>
+                            <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="deliveryMode"
+                                        checked={formData.deliveryMode === 'delivery'}
+                                        onChange={() => handleDeliveryModeChange('delivery')}
+                                    /> Delivery
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="deliveryMode"
+                                        checked={formData.deliveryMode === 'pickup'}
+                                        onChange={() => handleDeliveryModeChange('pickup')}
+                                    /> Customer Pickup
+                                </label>
+                            </div>
+                        </div>
+
+                        {formData.deliveryMode === 'delivery' && (
+                            <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
+                                    <Hash size={18} /> Delivery Charges
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="Enter charges"
+                                    value={formData.deliveryCharges}
+                                    onChange={e => setFormData({ ...formData, deliveryCharges: e.target.value })}
+                                    required
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <button
