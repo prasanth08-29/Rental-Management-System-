@@ -50,38 +50,43 @@ app.use('/api/rentals', rentalRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
+// MongoDB Connection
+const connectDB = async () => {
+  try {
+    const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+
+    if (mongoose.connection.readyState === 0) {
+      if (process.env.MONGODB_URI) {
+        const maskedURI = process.env.MONGODB_URI.replace(/:([^:@]{1,})@/, ':****@');
+        console.log(`Connection parameter: ${maskedURI}`);
+        await mongoose.connect(process.env.MONGODB_URI, clientOptions);
+        console.log('MongoDB connected successfully');
+      } else {
+        throw new Error('FATAL: MONGODB_URI is not defined');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to connect to MongoDB:', err);
+    console.error('HINT: Check if your IP is whitelisted in Atlas (0.0.0.0/0) and if the user/password in Environment Variables are correct.');
+  }
+};
+
+// Connect immediately (async)
+connectDB();
+
+// Root route
 app.get('/', (req, res) => {
   res.send('Rental Management System API is running');
 });
 
 app.use(errorHandler);
 
-// MongoDB Connection and Server Start
-const startServer = async () => {
-  try {
-    console.log('Attempting to connect to MongoDB...');
-    const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+// Server Start (Local Development)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
-    // Debug: Log the URI (masked)
-    if (process.env.MONGODB_URI) {
-      const maskedURI = process.env.MONGODB_URI.replace(/:([^:@]{1,})@/, ':****@');
-      console.log(`Connection parameter: ${maskedURI}`);
-    } else {
-      throw new Error('FATAL: MONGODB_URI is not defined');
-    }
-
-    await mongoose.connect(process.env.MONGODB_URI, clientOptions);
-    console.log('MongoDB connected successfully');
-
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-
-  } catch (err) {
-    console.error('Failed to start server:', err);
-    console.error('HINT: Check if your IP is whitelisted in Atlas (0.0.0.0/0) and if the user/password in Environment Variables are correct.');
-    process.exit(1);
-  }
-};
-
-startServer();
+// Export for Vercel
+module.exports = app;

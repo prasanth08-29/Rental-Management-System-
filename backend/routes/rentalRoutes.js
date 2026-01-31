@@ -118,7 +118,7 @@ router.get('/:id', async (req, res) => {
 // Create a rental and generate agreement
 router.post('/', async (req, res) => {
     try {
-        const { clientName, clientPhone, productId, startDate, endDate, serialNumber } = req.body;
+        const { clientName, clientPhone, productId, startDate, endDate, serialNumber, rentalRate } = req.body;
 
         const product = await Product.findById(productId);
         if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -131,7 +131,10 @@ router.post('/', async (req, res) => {
         const end = new Date(endDate);
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const totalRental = diffDays * product.pricePerDay;
+
+        // Use custom rental rate if provided, otherwise default to product price
+        const ratePerDay = rentalRate ? Number(rentalRate) : product.pricePerDay;
+        const totalRental = diffDays * ratePerDay;
 
         // Generate agreement HTML
         let agreementHtml = template.content
@@ -143,7 +146,7 @@ router.post('/', async (req, res) => {
             .replace(/{{SERIAL_NUMBER}}/g, serialNumber || '')
             .replace(/{{PICKUP_DATE}}/g, start.toLocaleDateString('en-IN'))
             .replace(/{{END_DATE}}/g, end.toLocaleDateString('en-IN'))
-            .replace(/{{RENTAL_RATE}}/g, `Rs.${product.pricePerDay}/- per day`)
+            .replace(/{{RENTAL_RATE}}/g, `Rs.${ratePerDay}/- per day`)
             .replace(/{{SECURITY_DEPOSIT}}/g, `Rs.${product.securityDeposit}/-`)
             .replace(/{{DELIVERY_CHARGES}}/g, `Rs.${product.deliveryCharges}/-`)
             .replace(/{{TOTAL_CHARGE}}/g, `Rs.${totalRental}/-`)
@@ -157,6 +160,7 @@ router.post('/', async (req, res) => {
             endDate,
             securityDeposit: product.securityDeposit,
             deliveryCharges: product.deliveryCharges,
+            rentalRate: ratePerDay,
             serialNumber,
             agreementHtml,
         });

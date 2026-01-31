@@ -8,6 +8,7 @@ const rentalSchema = new mongoose.Schema({
     endDate: { type: Date, required: true },
     securityDeposit: { type: Number },
     deliveryCharges: { type: Number },
+    rentalRate: { type: Number },
     serialNumber: { type: String },
     agreementHtml: { type: String }, // Storing the generated agreement at that time
 }, { timestamps: true });

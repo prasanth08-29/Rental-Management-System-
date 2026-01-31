@@ -15,6 +15,7 @@ const ClientBooking = () => {
         clientName: '',
         clientPhone: '',
         productId: '',
+        rentalRate: '',
         startDate: '',
         endDate: '',
     });
@@ -102,7 +103,14 @@ const ClientBooking = () => {
                             </label>
                             <select
                                 value={formData.productId}
-                                onChange={e => setFormData({ ...formData, productId: e.target.value })}
+                                onChange={e => {
+                                    const selectedProduct = products.find(p => p._id === e.target.value);
+                                    setFormData({
+                                        ...formData,
+                                        productId: e.target.value,
+                                        rentalRate: selectedProduct ? selectedProduct.pricePerDay : ''
+                                    });
+                                }}
                                 required
                             >
                                 <option value="">-- Choose a product --</option>
@@ -139,6 +147,19 @@ const ClientBooking = () => {
                                 required
                             />
                         </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
+                            <Hash size={18} /> Rental Rate (Per Day)
+                        </label>
+                        <input
+                            type="number"
+                            placeholder="Enter rental rate"
+                            value={formData.rentalRate}
+                            onChange={e => setFormData({ ...formData, rentalRate: e.target.value })}
+                            required
+                        />
                     </div>
 
                     <button

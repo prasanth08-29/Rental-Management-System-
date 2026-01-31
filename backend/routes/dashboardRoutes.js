@@ -18,25 +18,22 @@ router.get('/stats', async (req, res) => {
 
         // Let's stick to simple counts and lists first as per user request.
 
-        const totalProducts = await Product.countDocuments();
-        const activeRentals = await Rental.countDocuments({ endDate: { $gte: today } }); // Assuming active if endDate is future
-
-        // Rentals ending today
-        const dueToday = await Rental.find({
-            endDate: {
-                $gte: today,
-                $lt: tomorrow
-            }
-        }).populate('product', 'name');
-
-        // Rentals ending tomorrow (User asked for today/tomorrow in plan, but mostly today)
-        const dueTomorrow = await Rental.find({
-            endDate: {
-                $gte: tomorrow,
-                $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
-            }
-        }).populate('product', 'name');
-
+        const [totalProducts, activeRentals, dueToday, dueTomorrow] = await Promise.all([
+            Product.countDocuments(),
+            Rental.countDocuments({ endDate: { $gte: today } }),
+            Rental.find({
+                endDate: {
+                    $gte: today,
+                    $lt: tomorrow
+                }
+            }).populate('product', 'name'),
+            Rental.find({
+                endDate: {
+                    $gte: tomorrow,
+                    $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
+                }
+            }).populate('product', 'name')
+        ]);
 
         res.json({
             totalProducts,
