@@ -8,8 +8,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     const isAdminPath = location.pathname.startsWith('/admin');
 
     const handleLogout = () => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('userRole');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
         navigate('/');
     };
 

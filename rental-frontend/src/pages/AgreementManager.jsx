@@ -31,7 +31,7 @@ const AgreementManager = () => {
     const [rentalToDelete, setRentalToDelete] = useState(null);
 
     // Check for admin role
-    const isAdmin = sessionStorage.getItem('userRole') === 'admin';
+    const isAdmin = localStorage.getItem('userRole') === 'admin';
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -129,7 +129,7 @@ const AgreementManager = () => {
         if (!rentalToDelete) return;
 
         try {
-            const token = sessionStorage.getItem('token');
+            const token = localStorage.getItem('token');
             await axios.delete(`${import.meta.env.VITE_API_URL}/rentals/${rentalToDelete}`, {
                 headers: { 'x-auth-token': token }
             });
@@ -154,7 +154,7 @@ const AgreementManager = () => {
         if (!rentalToClose) return;
 
         try {
-            const token = sessionStorage.getItem('token');
+            const token = localStorage.getItem('token');
             await axios.put(`${import.meta.env.VITE_API_URL}/rentals/${rentalToClose}/close`, {}, {
                 headers: { 'x-auth-token': token }
             });

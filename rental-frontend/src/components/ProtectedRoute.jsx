@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-    const token = sessionStorage.getItem('token');
-    const userRole = sessionStorage.getItem('userRole');
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
 
     // Check for token existence
     if (!token) {

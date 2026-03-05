@@ -22,7 +22,7 @@ const AdminUsers = () => {
         role: 'user'
     });
 
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const config = {
         headers: {
             'x-auth-token': token

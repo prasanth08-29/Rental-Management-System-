@@ -22,7 +22,7 @@ const AgreementView = () => {
     // Close modal state
     const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
 
-    const isAdmin = sessionStorage.getItem('userRole') === 'admin';
+    const isAdmin = localStorage.getItem('userRole') === 'admin';
 
     useEffect(() => {
         const fetchRental = async () => {
@@ -86,7 +86,7 @@ const AgreementView = () => {
 
     const confirmDelete = async () => {
         try {
-            const token = sessionStorage.getItem('token');
+            const token = localStorage.getItem('token');
             await axios.delete(`${RENTALS_API}/${id}`, {
                 headers: { 'x-auth-token': token }
             });
@@ -106,7 +106,7 @@ const AgreementView = () => {
 
     const confirmClose = async () => {
         try {
-            const token = sessionStorage.getItem('token');
+            const token = localStorage.getItem('token');
             await axios.put(`${RENTALS_API}/${id}/close`, {}, {
                 headers: { 'x-auth-token': token }
             });

@@ -26,8 +26,8 @@ const AdminLogin = () => {
                 return;
             }
 
-            sessionStorage.setItem('token', res.data.token);
-            sessionStorage.setItem('userRole', user.role);
+            localStorage.setItem('token', res.data.token);
+            localStorage.setItem('userRole', user.role);
 
             toast.success('Login Successful! Welcome back.');
 
