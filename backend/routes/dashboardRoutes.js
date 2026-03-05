@@ -20,14 +20,16 @@ router.get('/stats', async (req, res) => {
 
         const [totalProducts, activeRentals, dueToday, dueTomorrow] = await Promise.all([
             Product.countDocuments(),
-            Rental.countDocuments({ endDate: { $gte: today } }),
+            Rental.countDocuments({ endDate: { $gte: today }, status: { $ne: 'Closed' } }),
             Rental.find({
+                status: { $ne: 'Closed' },
                 endDate: {
                     $gte: today,
                     $lt: tomorrow
                 }
             }).populate('product', 'name'),
             Rental.find({
+                status: { $ne: 'Closed' },
                 endDate: {
                     $gte: tomorrow,
                     $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)

@@ -12,6 +12,8 @@ const AgreementManager = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newEndDate, setNewEndDate] = useState('');
+    const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+    const [rentalToClose, setRentalToClose] = useState(null);
 
     // Filter states
     // Filter states
@@ -142,6 +144,31 @@ const AgreementManager = () => {
         }
     };
 
+    const handleCloseClick = (id, e) => {
+        e.stopPropagation();
+        setRentalToClose(id);
+        setIsCloseModalOpen(true);
+    };
+
+    const confirmClose = async () => {
+        if (!rentalToClose) return;
+
+        try {
+            const token = sessionStorage.getItem('token');
+            await axios.put(`${import.meta.env.VITE_API_URL}/rentals/${rentalToClose}/close`, {}, {
+                headers: { 'x-auth-token': token }
+            });
+            toast.success('Agreement closed successfully');
+            fetchRentals(page); // Refresh list
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to close agreement');
+        } finally {
+            setIsCloseModalOpen(false);
+            setRentalToClose(null);
+        }
+    };
+
     const calculateDaysRemaining = (endDate) => {
         const end = new Date(endDate);
         const now = new Date();
@@ -151,6 +178,7 @@ const AgreementManager = () => {
     };
 
     const getStatus = (rental) => {
+        if (rental.status === 'Closed') return { label: 'Closed', color: 'gray', icon: <CheckCircle size={16} /> };
         const daysRemaining = calculateDaysRemaining(rental.endDate);
         if (daysRemaining < 0) return { label: 'Overdue', color: 'red', icon: <AlertCircle size={16} /> };
         if (daysRemaining === 0) return { label: 'Due Today', color: 'orange', icon: <Clock size={16} /> };
@@ -256,14 +284,26 @@ const AgreementManager = () => {
 
                                             {isAdmin && (
                                                 <td style={{ padding: '0.75rem 1rem' }}>
-                                                    <button
-                                                        onClick={(e) => handleDeleteClick(rental._id, e)}
-                                                        className="btn-icon danger"
-                                                        title="Delete Agreement"
-                                                        style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        {rental.status !== 'Closed' && status.label === 'Overdue' && (
+                                                            <button
+                                                                onClick={(e) => handleCloseClick(rental._id, e)}
+                                                                className="btn-icon"
+                                                                title="Close Agreement"
+                                                                style={{ color: '#4b5563', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                            >
+                                                                <CheckCircle size={18} />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => handleDeleteClick(rental._id, e)}
+                                                            className="btn-icon danger"
+                                                            title="Delete Agreement"
+                                                            style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             )}
                                         </tr>
@@ -305,6 +345,16 @@ const AgreementManager = () => {
                 message="Are you sure you want to delete this agreement? This action cannot be undone."
                 confirmText="Delete"
                 type="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={isCloseModalOpen}
+                onClose={() => setIsCloseModalOpen(false)}
+                onConfirm={confirmClose}
+                title="Close Agreement"
+                message="Are you sure you want to close this agreement? It will no longer be marked as Overdue."
+                confirmText="Close Agreement"
+                type="primary"
             />
         </div>
     );

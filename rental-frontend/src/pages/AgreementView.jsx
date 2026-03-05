@@ -18,6 +18,10 @@ const AgreementView = () => {
 
     // Delete modal state
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    // Close modal state
+    const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+
     const isAdmin = sessionStorage.getItem('userRole') === 'admin';
 
     useEffect(() => {
@@ -96,8 +100,33 @@ const AgreementView = () => {
         }
     };
 
+    const handleCloseClick = () => {
+        setIsCloseModalOpen(true);
+    };
+
+    const confirmClose = async () => {
+        try {
+            const token = sessionStorage.getItem('token');
+            await axios.put(`${RENTALS_API}/${id}/close`, {}, {
+                headers: { 'x-auth-token': token }
+            });
+            toast.success('Agreement closed successfully');
+            // Refresh rental data
+            const res = await axios.get(`${RENTALS_API}/${id}`);
+            setRental(res.data);
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to close agreement');
+        } finally {
+            setIsCloseModalOpen(false);
+        }
+    };
+
     if (loading) return <p>Loading agreement...</p>;
     if (!rental) return <p>Agreement not found.</p>;
+
+    const daysRemaining = Math.ceil((new Date(rental.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+    const isOverdue = daysRemaining < 0 && rental.status !== 'Closed';
 
     return (
         <div className="animate-fade">
@@ -115,6 +144,12 @@ const AgreementView = () => {
                     <button className="btn btn-secondary" onClick={openExtendModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#d97706', border: 'none' }}>
                         <Clock size={18} /> Extend
                     </button>
+                    {isAdmin && isOverdue && (
+                        <button className="btn btn-secondary" onClick={handleCloseClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#e5e7eb', color: '#4b5563', border: 'none' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Close Agreement
+                        </button>
+                    )}
                     {isAdmin && (
                         <button className="btn btn-secondary" onClick={handleDeleteClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fee2e2', color: '#dc2626', border: 'none' }}>
                             <Trash2 size={18} /> Delete
@@ -168,6 +203,16 @@ const AgreementView = () => {
                 message="Are you sure you want to delete this agreement? This action cannot be undone."
                 confirmText="Delete"
                 type="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={isCloseModalOpen}
+                onClose={() => setIsCloseModalOpen(false)}
+                onConfirm={confirmClose}
+                title="Close Agreement"
+                message="Are you sure you want to close this agreement? It will no longer be marked as Overdue."
+                confirmText="Close"
+                type="primary"
             />
 
             <style>

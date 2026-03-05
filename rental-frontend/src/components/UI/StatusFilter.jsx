@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const StatusFilter = ({ value, onChange, options = ['Active', 'Overdue', 'Due Today'] }) => {
+const StatusFilter = ({ value, onChange, options = ['Active', 'Overdue', 'Due Today', 'Closed'] }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 

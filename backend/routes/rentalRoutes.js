@@ -44,25 +44,21 @@ router.get('/', async (req, res) => {
 
         if (req.query.status) {
             switch (req.query.status) {
+                case 'Closed':
+                    query.status = 'Closed';
+                    break;
                 case 'Overdue':
                     query.endDate = { $lt: todayStart };
+                    query.status = { $ne: 'Closed' }; // Shouldn't be closed
                     break;
                 case 'Due Today':
                     query.endDate = { $gte: todayStart, $lte: todayEnd };
+                    query.status = { $ne: 'Closed' };
                     break;
                 case 'Active':
-                    // Active usually means valid now or in future. 
-                    // If "Active" specifically means "Standard active rentals (not overdue)", 
-                    // we might check for endDate >= todayStart.
-                    // Based on "Green" status in frontend often meaning "safe", let's assume >= todayStart.
-                    // Or if "Active" excludes "Due Today", we can do > todayEnd.
-                    // Let's stick to the frontend logic: Active is anything not overdue and not due today?
-                    // Frontend says: < 0 is overdue, == 0 is Due Today, else Active.
-                    // So Active is > todayEnd (tomorrow onwards).
-                    const tomorrow = new Date(todayEnd);
-                    tomorrow.setDate(tomorrow.getDate() + 1); // move to start of next day? Or just > todayEnd
-                    // simpler: date diff > 0.
+                    // Active is everything not closed, due today or overdue
                     query.endDate = { $gt: todayEnd };
+                    query.status = { $ne: 'Closed' };
                     break;
             }
         }
@@ -191,6 +187,25 @@ router.put('/:id/extend', async (req, res) => {
         if (!rental) return res.status(404).json({ message: 'Rental not found' });
 
         rental.endDate = newEndDate;
+        if (rental.status === 'Closed') {
+            rental.status = 'Active'; // Reopen if it was closed
+        }
+        const updatedRental = await rental.save();
+
+        res.json(updatedRental);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// Close rental agreement
+router.put('/:id/close', async (req, res) => {
+    try {
+        const rental = await Rental.findById(req.params.id);
+
+        if (!rental) return res.status(404).json({ message: 'Rental not found' });
+
+        rental.status = 'Closed';
         const updatedRental = await rental.save();
 
         res.json(updatedRental);

@@ -11,6 +11,7 @@ const rentalSchema = new mongoose.Schema({
     rentalRate: { type: Number },
     serialNumber: { type: String },
     agreementHtml: { type: String }, // Storing the generated agreement at that time
+    status: { type: String, enum: ['Active', 'Closed'], default: 'Active' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Rental', rentalSchema);
