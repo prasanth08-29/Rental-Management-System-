@@ -71,27 +71,14 @@ router.get('/analytics', adminAuth, async (req, res) => {
 
         const format = groupBy === 'month' ? "%Y-%m" : "%Y-%m-%d";
 
-        const stats = await Rental.aggregate([
-            {
-                $match: {
-                    createdAt: { $gte: startDate }
-                }
-            },
+        // Query 1: Timeline Data
+        const timeline = await Rental.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
             {
                 $project: {
                     groupField: { $dateToString: { format: format, date: "$createdAt" } },
                     durationDays: {
-                        $add: [
-                            {
-                                $floor: {
-                                    $divide: [
-                                        { $subtract: ["$endDate", "$startDate"] },
-                                        1000 * 60 * 60 * 24
-                                    ]
-                                }
-                            },
-                            1
-                        ]
+                        $add: [{ $floor: { $divide: [{ $subtract: ["$endDate", "$startDate"] }, 1000 * 60 * 60 * 24] } }, 1]
                     },
                     rentalRate: { $ifNull: ["$rentalRate", 0] },
                     deliveryCharges: { $ifNull: ["$deliveryCharges", 0] }
@@ -100,12 +87,7 @@ router.get('/analytics', adminAuth, async (req, res) => {
             {
                 $project: {
                     groupField: 1,
-                    totalAmount: {
-                        $add: [
-                            { $multiply: ["$durationDays", "$rentalRate"] },
-                            "$deliveryCharges"
-                        ]
-                    }
+                    totalAmount: { $add: [{ $multiply: ["$durationDays", "$rentalRate"] }, "$deliveryCharges"] }
                 }
             },
             {
@@ -118,7 +100,68 @@ router.get('/analytics', adminAuth, async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
-        res.json(stats);
+        // Query 2: Top Performing Products (by Revenue)
+        const topProducts = await Rental.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
+            {
+                $project: {
+                    product: 1,
+                    durationDays: {
+                        $add: [{ $floor: { $divide: [{ $subtract: ["$endDate", "$startDate"] }, 1000 * 60 * 60 * 24] } }, 1]
+                    },
+                    rentalRate: { $ifNull: ["$rentalRate", 0] },
+                    deliveryCharges: { $ifNull: ["$deliveryCharges", 0] }
+                }
+            },
+            {
+                $project: {
+                    product: 1,
+                    totalAmount: { $add: [{ $multiply: ["$durationDays", "$rentalRate"] }, "$deliveryCharges"] }
+                }
+            },
+            {
+                $group: {
+                    _id: "$product",
+                    revenue: { $sum: "$totalAmount" },
+                    bookings: { $count: {} }
+                }
+            },
+            { $sort: { revenue: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: "$productInfo" },
+            {
+                $project: {
+                    name: "$productInfo.name",
+                    revenue: 1,
+                    bookings: 1
+                }
+            }
+        ]);
+
+        // Query 3: Status Distribution
+        const statusDistribution = await Rental.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $count: {} }
+                }
+            }
+        ]);
+
+        res.json({
+            timeline,
+            topProducts,
+            statusDistribution
+        });
     } catch (err) {
         console.error('Analytics Error:', err);
         res.status(500).json({ message: 'Failed to fetch analytics', error: err.toString() });

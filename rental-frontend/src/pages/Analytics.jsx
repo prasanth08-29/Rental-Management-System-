@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { TrendingUp, BarChart3, Filter, AlertCircle, ShoppingBag, Users, Clock } from 'lucide-react';
+import { TrendingUp, BarChart3, Filter, AlertCircle, ShoppingBag, Users, PieChart as PieIcon, Award, DollarSign } from 'lucide-react';
 import {
     ResponsiveContainer,
     AreaChart,
@@ -8,14 +8,26 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip
+    Tooltip,
+    BarChart,
+    Bar,
+    Cell,
+    PieChart,
+    Pie,
+    Legend
 } from 'recharts';
 
 const ANALYTICS_API = `${import.meta.env.VITE_API_URL}/dashboard/analytics`;
 const STATS_API = `${import.meta.env.VITE_API_URL}/dashboard/stats`;
 
+const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'];
+
 const Analytics = () => {
-    const [analytics, setAnalytics] = useState([]);
+    const [data, setData] = useState({
+        timeline: [],
+        topProducts: [],
+        statusDistribution: []
+    });
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -40,7 +52,7 @@ const Analytics = () => {
             const res = await axios.get(`${ANALYTICS_API}?range=${range}&groupBy=${groupBy}`, {
                 headers: { 'x-auth-token': token }
             });
-            setAnalytics(res.data);
+            setData(res.data);
             setLoading(false);
         } catch (err) {
             console.error('Analytics Fetch Error:', err);
@@ -54,7 +66,11 @@ const Analytics = () => {
         fetchAnalytics();
     }, [fetchStats, fetchAnalytics]);
 
-    const totalRevenue = analytics.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalRevenue = data.timeline.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalBookings = data.timeline.reduce((acc, curr) => acc + curr.bookings, 0);
+    const avgBookingValue = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+
+    if (error) return <div className="animate-fade"><p style={{ color: 'red' }}>{error}</p></div>;
 
     return (
         <div className="animate-fade">
@@ -66,7 +82,7 @@ const Analytics = () => {
                         <select
                             value={range}
                             onChange={(e) => setRange(e.target.value)}
-                            style={{ border: 'none', background: 'transparent', margin: 0, padding: 0, fontWeight: 'bold', width: 'auto' }}
+                            style={{ border: 'none', background: 'transparent', margin: 0, padding: 0, fontWeight: 'bold', width: 'auto', cursor: 'pointer' }}
                         >
                             <option value="last7days">Last 7 Days</option>
                             <option value="last30days">Last 30 Days</option>
@@ -79,39 +95,44 @@ const Analytics = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                 <AnalyticsStatCard
-                    title="Estimated Revenue"
+                    title="Revenue"
                     value={`₹${totalRevenue.toLocaleString()}`}
                     subValue={`${range.replace('last', 'Last ')}`}
                     icon={<TrendingUp size={24} color="#6366f1" />}
                     color="rgba(99, 102, 241, 0.1)"
                 />
+                <AnalyticsStatCard
+                    title="Avg. Booking"
+                    value={`₹${Math.round(avgBookingValue).toLocaleString()}`}
+                    subValue="Per customer"
+                    icon={<DollarSign size={24} color="#10b981" />}
+                    color="rgba(16, 185, 129, 0.1)"
+                />
+                <AnalyticsStatCard
+                    title="Total Orders"
+                    value={totalBookings}
+                    subValue="Converted leads"
+                    icon={<ShoppingBag size={24} color="#8b5cf6" />}
+                    color="rgba(139, 92, 246, 0.1)"
+                />
                 {stats && (
-                    <>
-                        <AnalyticsStatCard
-                            title="Inventory Size"
-                            value={stats.totalProducts || 0}
-                            icon={<ShoppingBag size={24} color="#8b5cf6" />}
-                            color="rgba(139, 92, 246, 0.1)"
-                        />
-                        <AnalyticsStatCard
-                            title="Client Base"
-                            value={stats.activeRentals || 0}
-                            icon={<Users size={24} color="#10b981" />}
-                            color="rgba(16, 185, 129, 0.1)"
-                        />
-                    </>
+                    <AnalyticsStatCard
+                        title="Retention"
+                        value={stats.activeRentals || 0}
+                        subValue="Active users"
+                        icon={<Users size={24} color="#f59e0b" />}
+                        color="rgba(245, 158, 11, 0.1)"
+                    />
                 )}
             </div>
 
-            <div className="glass-card" style={{ padding: '2rem', background: 'white', marginBottom: '3rem', minHeight: '450px' }}>
+            {/* Revenue Trends Chart */}
+            <div className="glass-card" style={{ padding: '2rem', background: 'white', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <BarChart3 size={20} color="var(--primary)" /> Revenue Trends
                         </h3>
-                        <p style={{ margin: '0.5rem 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            Financial performance visualization grouped by {groupBy}.
-                        </p>
                     </div>
 
                     <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '10px', gap: '4px' }}>
@@ -144,50 +165,81 @@ const Analytics = () => {
                     </div>
                 </div>
 
-                <div style={{ height: '350px', width: '100%', marginTop: '1rem' }}>
-                    {loading ? (
-                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                            Calculating analytics...
-                        </div>
-                    ) : analytics.length === 0 ? (
-                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: '1rem' }}>
-                            <AlertCircle size={48} opacity={0.3} />
-                            <p>No revenue data found for this period.</p>
-                        </div>
-                    ) : (
+                <div style={{ height: '350px', width: '100%' }}>
+                    {loading ? <div className="loading-placeholder">Loading...</div> : (
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={analytics} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <AreaChart data={data.timeline}>
                                 <defs>
                                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
                                         <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis
-                                    dataKey="_id"
-                                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                                    tickFormatter={(val) => groupBy === 'day' ? val.split('-').slice(1).join('/') : val}
-                                />
-                                <YAxis
-                                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                                    tickFormatter={(val) => `₹${val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val}`}
-                                />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', padding: '12px' }}
-                                    formatter={(val) => [`₹${val.toLocaleString()}`, 'Revenue']}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="amount"
-                                    stroke="#6366f1"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorAmount)"
-                                />
+                                <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(v) => `₹${v}`} />
+                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                <Area type="monotone" dataKey="amount" name="Revenue" stroke="#6366f1" strokeWidth={3} fill="url(#colorAmount)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     )}
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+                {/* Top Products */}
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <h3 style={{ margin: '0 0 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Award size={20} color="#f59e0b" /> Top Performing Products
+                    </h3>
+                    <div style={{ height: '300px' }}>
+                        {loading ? <div className="loading-placeholder">Loading...</div> : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.topProducts} layout="vertical" margin={{ left: 40 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                    <XAxis type="number" hide />
+                                    <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569', fontWeight: 500 }} />
+                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                    <Bar dataKey="revenue" name="Revenue" radius={[0, 4, 4, 0]}>
+                                        {data.topProducts.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+
+                {/* Status Distribution */}
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <h3 style={{ margin: '0 0 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <PieIcon size={20} color="#10b981" /> Order Status Distribution
+                    </h3>
+                    <div style={{ height: '300px' }}>
+                        {loading ? <div className="loading-placeholder">Loading...</div> : data.statusDistribution.length === 0 ? <p>No status data</p> : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data.statusDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="count"
+                                        nameKey="_id"
+                                    >
+                                        {data.statusDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                    <Legend verticalAlign="bottom" height={36} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
