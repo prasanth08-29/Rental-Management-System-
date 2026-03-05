@@ -5,7 +5,8 @@ import { LayoutDashboard, Package, FileText, Settings, LogOut, ChevronRight, Use
 const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const isAdminPath = location.pathname.startsWith('/admin');
+    const userRole = localStorage.getItem('userRole');
+    const isAdmin = userRole === 'admin';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -14,11 +15,11 @@ const Sidebar = ({ isOpen, onClose }) => {
     };
 
     const mainLinks = [
-        { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, visible: !isAdminPath },
-        { name: 'Booking', path: '/', icon: <LayoutDashboard size={20} />, visible: !isAdminPath },
-        { name: 'Products', path: '/admin/products', icon: <Package size={20} />, visible: isAdminPath },
-        { name: 'Template', path: '/admin/template', icon: <Settings size={20} />, visible: isAdminPath },
-        { name: 'Users', path: '/admin/users', icon: <User size={20} />, visible: isAdminPath },
+        { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, visible: true },
+        { name: 'Booking', path: '/', icon: <LayoutDashboard size={20} />, visible: !isAdmin },
+        { name: 'Products', path: '/admin/products', icon: <Package size={20} />, visible: isAdmin },
+        { name: 'Template', path: '/admin/template', icon: <Settings size={20} />, visible: isAdmin },
+        { name: 'Users', path: '/admin/users', icon: <User size={20} />, visible: isAdmin },
         { name: 'Agreements', path: '/agreements', icon: <FileText size={20} />, visible: true },
     ];
 
@@ -57,7 +58,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                             <span className="link-text">{link.name}</span>
                         </NavLink>
                     ))}
-                    {isAdminPath && (
+                    {isAdmin && (
                         <button
                             onClick={handleLogout}
                             className="nav-link"
@@ -78,13 +79,13 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             <div className="sidebar-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <div className="user-profile">
-                    <div className="avatar" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>A</div>
+                    <div className="avatar" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{isAdmin ? 'A' : 'U'}</div>
                     <div className="user-info">
-                        <span className="user-name">Admin</span>
-                        <span className="user-role" style={{ color: 'rgba(255,255,255,0.5)' }}>Super Admin</span>
+                        <span className="user-name">{isAdmin ? 'Admin' : 'User'}</span>
+                        <span className="user-role" style={{ color: 'rgba(255,255,255,0.5)' }}>{isAdmin ? 'Super Admin' : 'Customer'}</span>
                     </div>
                 </div>
-                {isAdminPath && (
+                {isAdmin && (
                     <button className="logout-btn" title="Logout" onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
                         <LogOut size={20} />
                     </button>
