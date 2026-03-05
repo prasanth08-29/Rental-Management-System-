@@ -252,7 +252,7 @@ const AgreementManager = () => {
                                         onChange={setStatusFilter}
                                     />
                                 </th>
-                                {isAdmin && <th style={{ padding: '0.75rem 1rem', width: '50px' }}>Actions</th>}
+                                <th style={{ padding: '0.75rem 1rem', width: '50px' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -282,19 +282,19 @@ const AgreementManager = () => {
                                                 </span>
                                             </td>
 
-                                            {isAdmin && (
-                                                <td style={{ padding: '0.75rem 1rem' }}>
-                                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                        {rental.status !== 'Closed' && status.label === 'Overdue' && (
-                                                            <button
-                                                                onClick={(e) => handleCloseClick(rental._id, e)}
-                                                                className="btn-icon"
-                                                                title="Close Agreement"
-                                                                style={{ color: '#4b5563', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
-                                                            >
-                                                                <CheckCircle size={18} />
-                                                            </button>
-                                                        )}
+                                            <td style={{ padding: '0.75rem 1rem' }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                    {rental.status !== 'Closed' && status.label === 'Overdue' && (
+                                                        <button
+                                                            onClick={(e) => handleCloseClick(rental._id, e)}
+                                                            className="btn-icon"
+                                                            title="Close Agreement"
+                                                            style={{ color: '#4b5563', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                                                        >
+                                                            <CheckCircle size={18} />
+                                                        </button>
+                                                    )}
+                                                    {isAdmin && (
                                                         <button
                                                             onClick={(e) => handleDeleteClick(rental._id, e)}
                                                             className="btn-icon danger"
@@ -303,9 +303,9 @@ const AgreementManager = () => {
                                                         >
                                                             <Trash2 size={18} />
                                                         </button>
-                                                    </div>
-                                                </td>
-                                            )}
+                                                    )}
+                                                </div>
+                                            </td>
                                         </tr>
                                     );
                                 })

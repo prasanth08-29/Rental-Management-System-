@@ -144,7 +144,7 @@ const AgreementView = () => {
                     <button className="btn btn-secondary" onClick={openExtendModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#d97706', border: 'none' }}>
                         <Clock size={18} /> Extend
                     </button>
-                    {isAdmin && isOverdue && (
+                    {isOverdue && (
                         <button className="btn btn-secondary" onClick={handleCloseClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#e5e7eb', color: '#4b5563', border: 'none' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                             Close Agreement
