@@ -9,6 +9,7 @@ import AdminUsers from './pages/AdminUsers';
 import ClientBooking from './pages/ClientBooking';
 import AgreementView from './pages/AgreementView';
 import AgreementManager from './pages/AgreementManager';
+import Analytics from './pages/Analytics';
 import Sidebar from './components/Sidebar';
 
 import AdminLogin from './pages/AdminLogin';
@@ -110,6 +111,7 @@ function App() {
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/template" element={<AdminTemplate />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/analytics" element={<Analytics />} />
           </Route>
         </Routes>
       </Layout>

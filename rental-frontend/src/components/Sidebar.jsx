@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, FileText, Settings, LogOut, ChevronRight, User, X } from 'lucide-react';
+import { LayoutDashboard, Package, FileText, Settings, LogOut, ChevronRight, User, X, BarChart3 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
@@ -16,6 +16,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     const mainLinks = [
         { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, visible: true },
+        { name: 'Analytics', path: '/admin/analytics', icon: <BarChart3 size={20} />, visible: isAdmin },
         { name: 'Booking', path: '/', icon: <LayoutDashboard size={20} />, visible: !isAdmin },
         { name: 'Products', path: '/admin/products', icon: <Package size={20} />, visible: isAdmin },
         { name: 'Template', path: '/admin/template', icon: <Settings size={20} />, visible: isAdmin },
