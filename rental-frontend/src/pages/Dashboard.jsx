@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { ShoppingBag, Users, Clock, AlertCircle, TrendingUp, BarChart3, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,9 +9,7 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip,
-    BarChart,
-    Bar
+    Tooltip
 } from 'recharts';
 
 const STATS_API = `${import.meta.env.VITE_API_URL}/dashboard/stats`;
@@ -28,15 +26,7 @@ const Dashboard = () => {
     const [range, setRange] = useState('last30days');
     const [groupBy, setGroupBy] = useState('day');
 
-    useEffect(() => {
-        fetchStats();
-    }, []);
-
-    useEffect(() => {
-        fetchAnalytics();
-    }, [range, groupBy]);
-
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
             const res = await axios.get(STATS_API);
             setStats(res.data);
@@ -47,9 +37,9 @@ const Dashboard = () => {
             setError(errorMessage);
             setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = useCallback(async () => {
         try {
             setAnalyticsLoading(true);
             const token = localStorage.getItem('token');
@@ -62,11 +52,17 @@ const Dashboard = () => {
             console.error('Analytics Fetch Error:', err);
             setAnalyticsLoading(false);
         }
-    };
+    }, [range, groupBy]);
 
-    const getTotalRevenue = () => {
-        return analytics.reduce((acc, curr) => acc + curr.amount, 0);
-    };
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, [fetchAnalytics]);
+
+    const totalRevenue = analytics.reduce((acc, curr) => acc + curr.amount, 0);
 
     if (loading) return <div className="animate-fade"><p>Loading dashboard...</p></div>;
     if (error) return <div className="animate-fade"><p style={{ color: 'red' }}>{error}</p></div>;
@@ -96,7 +92,7 @@ const Dashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                 <StatCard
                     title="Estimated Revenue"
-                    value={`₹${getTotalRevenue().toLocaleString()}`}
+                    value={`₹${totalRevenue.toLocaleString()}`}
                     subValue={`${range.replace('last', 'Last ')}`}
                     icon={<TrendingUp size={24} color="#6366f1" />}
                     color="rgba(99, 102, 241, 0.1)"
